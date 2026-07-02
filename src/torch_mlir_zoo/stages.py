@@ -1,7 +1,6 @@
 """Harness stages for the Torch-MLIR Model Zoo.
 
-Same plug-in pattern as `src/vision_app/stages.py` (vision-app branch):
-each stage inherits `BaseStage` from the framework core, registers via
+Each stage inherits `BaseStage` from the framework core, registers via
 `@register`, and exposes a single `__call__`. The framework core remains
 unchanged.
 

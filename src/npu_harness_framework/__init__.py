@@ -6,9 +6,8 @@ for stages, and a linear Pipeline that chains stages with profiler
 measurement.
 
 Concrete plugins (voice STT/LLM/TTS, vision classifier, ...) live on
-separate branches — see the `voice-app` branch for the first application
-example. Design intent and the Phase A/B/C generalization path live in
-`docs/ARCHITECTURE.md`.
+separate branches. Design intent and the Phase A/B/C generalization path
+live in `docs/ARCHITECTURE.md`.
 """
 from .interfaces import BaseStage
 from .pipeline import Pipeline

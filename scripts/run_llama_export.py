@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Step 5 — Llama-3.2-1B on-device end-to-end MLIR export application.
 
-vision-app's 4-stage Pipeline pattern: tokenize → load_model → export →
+A 4-stage Pipeline pattern: tokenize → load_model → export →
 analyze. Drops `artifacts/llama-3.2-1b-on-device.mlir` (top-level torch
 dialect) and `artifacts/llama-3.2-1b-on-device.summary.json` (op counts,
 server-side-op hits should be 0 vs amdsharktank's ≥1).

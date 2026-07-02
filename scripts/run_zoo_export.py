@@ -33,7 +33,7 @@ def run_one(op_name: str) -> dict:
         for s in cfg["stages"]
     ]
     # budget_mb=2048: 설계 검토 §2 "2GB 넘지 않는 모델" enforce.
-    # voice-app 의 configs/default.yaml 과 동일 값. 단위 op forward 단독은 보통 fit
+    # 단위 op forward 단독은 보통 fit
     # 하지만 invariant 를 코드에 박아둔다 (Llama e2e 와 일관성).
     pipeline = Pipeline(stages, log_path=str(LOG_PATH), budget_mb=2048)
     print(f"\n=== {op_name} ===")
