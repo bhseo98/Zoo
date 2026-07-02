@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Stack Architecture" id="stack">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ours_bg" value="OURS — Torch-MLIR Model Zoo (top dotted box)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f6ec;strokeColor=#2e7d32;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="80" y="60" width="460" height="300" as="geometry" /></mxCell>
+        <mxCell id="zoo" value="PyTorch Model Zoo&lt;br/&gt;LlamaOnDevice / WhisperForwardOnly&lt;br/&gt;forward-only · no PagedAttention · no KV-cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2e7d32;" vertex="1" parent="1"><mxGeometry x="110" y="110" width="400" height="60" as="geometry" /></mxCell>
+        <mxCell id="quant" value="INT8 block_scaled_q8&lt;br/&gt;per-OCH symmetric · LM3/WM3 verified" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2e7d32;" vertex="1" parent="1"><mxGeometry x="110" y="188" width="400" height="50" as="geometry" /></mxCell>
+        <mxCell id="export" value="Torch-MLIR export&lt;br/&gt;torch_mlir.compile(OutputType.TORCH)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2e7d32;" vertex="1" parent="1"><mxGeometry x="110" y="256" width="400" height="55" as="geometry" /></mxCell>
+        <mxCell id="join" value="★ JOIN — torch dialect MLIR ★&lt;br/&gt;hidden[1,32,2048]f16 · RoPE cos/sin as args · GQA 32/8 · seq 32&lt;br/&gt;contract: fused aten.linear preserved" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3c4;strokeColor=#f9a825;fontStyle=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="90" y="395" width="440" height="80" as="geometry" /></mxCell>
+        <mxCell id="recv_bg" value="RECEIVED — NPU runtime compiler + VP (below the line)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdecea;strokeColor=#c62828;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="80" y="510" width="460" height="360" as="geometry" /></mxCell>
+        <mxCell id="pass" value="iree-opt + NPU dialect plugin&lt;br/&gt;torch-to-npu → allocate-tcm → npu-to-ukernel → stream-lifecycle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c62828;" vertex="1" parent="1"><mxGeometry x="110" y="550" width="400" height="60" as="geometry" /></mxCell>
+        <mxCell id="uk" value="ukernel command stream&lt;br/&gt;mk_*_emit builders → 512-cmd CMEM chunks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c62828;" vertex="1" parent="1"><mxGeometry x="110" y="628" width="400" height="45" as="geometry" /></mxCell>
+        <mxCell id="bin" value="RISC-V Linux user binary (~575k cmds)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c62828;" vertex="1" parent="1"><mxGeometry x="110" y="690" width="400" height="45" as="geometry" /></mxCell>
+        <mxCell id="vp" value="npu-vp — SystemC NPU VP&lt;br/&gt;tcore / tcm / dma / ctrl_fe via npu_runtime.so adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c62828;" vertex="1" parent="1"><mxGeometry x="110" y="752" width="400" height="60" as="geometry" /></mxCell>
+        <mxCell id="golden" value="golden compare&lt;br/&gt;x_out @ 0xF9719000 vs expected_y_out_fp16.bin" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff3c4;strokeColor=#f9a825;" vertex="1" parent="1"><mxGeometry x="200" y="895" width="220" height="70" as="geometry" /></mxCell>
+        <mxCell id="oss_bg" value="OSS (used as-is)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="610" y="210" width="230" height="250" as="geometry" /></mxCell>
+        <mxCell id="oss1" value="upstream IREE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="630" y="255" width="190" height="45" as="geometry" /></mxCell>
+        <mxCell id="oss2" value="SystemC 3.0.0 / Qbox" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="630" y="315" width="190" height="45" as="geometry" /></mxCell>
+        <mxCell id="oss3" value="torch-mlir / iree-turbine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="630" y="375" width="190" height="45" as="geometry" /></mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="zoo" target="quant"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="quant" target="export"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" value="torch dialect MLIR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;fontStyle=1;" edge="1" parent="1" source="export" target="join"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="join" target="pass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="pass" target="uk"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="uk" target="bin"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="bin" target="vp"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="x_out" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="vp" target="golden"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="o1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;" edge="1" parent="1" source="oss3" target="export"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="o2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;" edge="1" parent="1" source="oss1" target="pass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="o3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;" edge="1" parent="1" source="oss2" target="vp"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Lowering and Join" id="lowering">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="750" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="M" value="PyTorch nn.Module&lt;br/&gt;LlamaOnDevice / WhisperForwardOnly&lt;br/&gt;standard aten only · no KV cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;" vertex="1" parent="1"><mxGeometry x="330" y="40" width="300" height="70" as="geometry" /></mxCell>
+        <mxCell id="SEL" value="export backend?&lt;br/&gt;config: exporter.type" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff3c4;strokeColor=#f9a825;" vertex="1" parent="1"><mxGeometry x="400" y="160" width="160" height="90" as="geometry" /></mxCell>
+        <mxCell id="A" value="torch_mlir.compile&lt;br/&gt;OutputType.TORCH (TorchScript)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f6ec;strokeColor=#2e7d32;" vertex="1" parent="1"><mxGeometry x="150" y="300" width="270" height="60" as="geometry" /></mxCell>
+        <mxCell id="B" value="iree.turbine.aot&lt;br/&gt;torch.export / dynamo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="540" y="300" width="270" height="60" as="geometry" /></mxCell>
+        <mxCell id="AT" value="top-level torch dialect&lt;br/&gt;aten.linear PRESERVED (fused)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e7f6ec;strokeColor=#2e7d32;" vertex="1" parent="1"><mxGeometry x="150" y="400" width="270" height="60" as="geometry" /></mxCell>
+        <mxCell id="BT" value="core-aten (decomposed)&lt;br/&gt;linear → mm/bmm · measured 65/24&lt;br/&gt;rms_norm → var_mean+rsqrt · SDPA → softmax" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="540" y="400" width="270" height="70" as="geometry" /></mxCell>
+        <mxCell id="JOIN2" value="✅ JOIN — torch-to-npu&lt;br/&gt;matches fused aten.linear&lt;br/&gt;force-w8a8 inside pass (INT8, last)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3c4;strokeColor=#f9a825;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="150" y="520" width="270" height="75" as="geometry" /></mxCell>
+        <mxCell id="XJOIN" value="✗ join fails&lt;br/&gt;no matmul-form pattern in pass" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdecea;strokeColor=#c62828;" vertex="1" parent="1"><mxGeometry x="560" y="510" width="230" height="55" as="geometry" /></mxCell>
+        <mxCell id="Q" value="quantize_linears_ → block_scaled_q8&lt;br/&gt;INT8 · last step · IREE-CPU vmfb verify" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;" vertex="1" parent="1"><mxGeometry x="560" y="610" width="270" height="60" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="M" target="SEL"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l2" value="torch_mlir_dialect" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="SEL" target="A"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l3" value="iree_turbine" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="SEL" target="B"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="A" target="AT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="B" target="BT"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l6" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="AT" target="JOIN2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l7" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" parent="1" source="BT" target="XJOIN"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l8" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="BT" target="Q"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

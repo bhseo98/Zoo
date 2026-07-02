@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zoo"
+version = "0.3.0"
+description = "Torch-MLIR Model Zoo (Llama-3.2-1B on-device) on the modality-agnostic harness core"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "bohyun seo" }]
+license = { text = "MIT" }
+
+dependencies = [
+    "psutil>=5.9",         # framework profiler — RSS
+    "pyyaml>=6.0",         # configs/zoo/*.yaml loader
+    "torch>=2.4,<2.7",     # Step 4-5 ops + on-device Llama; <2.7 to keep iree-turbine 3.10 compat
+    # torch-mlir wheel ships on llvm.github.io/torch-mlir/package-index/ (pre)
+    # and isn't on PyPI — install via Dockerfile, not here.
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+llama = [
+    "transformers>=4.45",       # tokenizer + HF weight loading (Step 5)
+    "sentencepiece>=0.2",
+    "huggingface_hub>=0.25",
+]
+shark = [
+    # iree.turbine.aot export backend (sibling to torch_mlir.compile).
+    # Nightly wheels — install with venv-shark workflow:
+    #   uv venv --python 3.11 ~/venv-shark
+    #   source ~/venv-shark/bin/activate
+    #   uv pip install -e .[shark] --find-links https://iree.dev/pip-release-links.html
+    "iree-base-compiler==3.11.*",
+    "iree-base-runtime==3.11.*",
+    "iree-turbine==3.10.*",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["slow: heavy end-to-end tests (opt-in via RUN_HEAVY=1)"]

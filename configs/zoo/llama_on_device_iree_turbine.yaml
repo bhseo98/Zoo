@@ -1,0 +1,26 @@
+# Sibling of `llama_on_device.yaml` — only the exporter backend differs.
+# Lets the two paths (torch_mlir_dialect vs iree_turbine) be diff'd on the
+# same model / tokenizer / analyzer chain.
+stages:
+  - name: tokenize
+    stage: tokenizer
+    config:
+      type: hf_llama
+      model_id: meta-llama/Llama-3.2-1B-Instruct
+      max_length: 32
+  - name: load_model
+    stage: model
+    config:
+      type: llama_on_device
+      hf_model_id: meta-llama/Llama-3.2-1B-Instruct
+      load_weights: true
+  - name: export
+    stage: exporter
+    config:
+      type: iree_turbine
+      out_path: artifacts/llama-3.2-1b-on-device-iree-turbine.mlir
+  - name: analyze
+    stage: analyzer
+    config:
+      type: ir_summary
+      out_path: artifacts/llama-3.2-1b-on-device-iree-turbine.summary.json
