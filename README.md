@@ -153,7 +153,6 @@ PyTorch Model Zoo ──torch_mlir.compile(OutputType.TORCH)──▶ torch-dial
 | [SHARK_AI_ANALYSIS.md](docs/SHARK_AI_ANALYSIS.md) | amdsharktank 서버향 → 온디바이스 포팅 분석 |
 | [RECIPES.md](docs/RECIPES.md) | 재현 가능한 export / lowering 명령 |
 | [GUIDELINES.md](docs/GUIDELINES.md) | 모델·op·백엔드 추가 규칙 + 엔지니어링 규율 |
-| [diagrams/architecture.drawio](docs/diagrams/architecture.drawio) | 편집 가능한 draw.io 원본 |
 
 ---
 

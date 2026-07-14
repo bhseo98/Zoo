@@ -19,5 +19,8 @@ Plugin registration is side-effect: `import torch_mlir_zoo` also triggers
 `from . import stages` so the harness can `build(...)` them via YAML.
 """
 from . import stages  # noqa: F401  (side-effect: registers stages)
+from .han_neuro import ExportResult, export_for_npu
 
 __version__ = "0.1.0"
+
+__all__ = ["export_for_npu", "ExportResult"]
