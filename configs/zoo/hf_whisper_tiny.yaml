@@ -1,0 +1,16 @@
+# Whisper-tiny (speech seq2seq) — the STT half of the target app.
+# The loader binds args by name: whisper's 2nd positional is attention_mask.
+stages:
+  - name: load
+    stage: loader
+    config:
+      type: hf_model
+      model_id: openai/whisper-tiny
+      task: speech_seq2seq
+      seq_len: 8
+  - name: export
+    stage: exporter
+    config: { type: iree_turbine, out_path: artifacts/zoo-hf/whisper-tiny.mlir }
+  - name: analyze
+    stage: analyzer
+    config: { type: ir_summary, out_path: artifacts/zoo-hf/whisper-tiny.summary.json }

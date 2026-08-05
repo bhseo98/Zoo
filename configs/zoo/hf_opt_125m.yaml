@@ -1,0 +1,17 @@
+# OPT-125m — the tied-embedding load repair case. Its checkpoint stores only
+# lm_head.weight, so a plain load leaves the input embedding on meta; the
+# hf_model loader reloads untied and restores the tie (models/hf.py).
+stages:
+  - name: load
+    stage: loader
+    config:
+      type: hf_model
+      model_id: facebook/opt-125m
+      task: causal_lm
+      seq_len: 8
+  - name: export
+    stage: exporter
+    config: { type: iree_turbine, out_path: artifacts/zoo-hf/opt-125m.mlir }
+  - name: analyze
+    stage: analyzer
+    config: { type: ir_summary, out_path: artifacts/zoo-hf/opt-125m.summary.json }

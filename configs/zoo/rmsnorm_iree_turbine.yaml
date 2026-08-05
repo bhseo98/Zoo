@@ -1,0 +1,10 @@
+stages:
+  - name: load
+    stage: loader
+    config: { type: zoo_op, op_name: rmsnorm, dummy_shape: [1, 32, 512] }
+  - name: export
+    stage: exporter
+    config: { type: iree_turbine, out_path: artifacts/zoo-iree/rmsnorm.mlir }
+  - name: analyze
+    stage: analyzer
+    config: { type: ir_summary, out_path: artifacts/zoo-iree/rmsnorm.summary.json }

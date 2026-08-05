@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:1.7
+# torch-mlir-zoo — dev / interactive shell variant (가상환경 접속용).
+#
+# Sibling of `Dockerfile` (CI / 일회성 실행). Same base image + same Python
+# deps, then adds light interactive tools (vim, jq, less, ipython, ...) and
+# defaults to bash. Useful for:
+#   - iterative experimentation (export 결과 즉시 확인, IR 손으로 grep)
+#   - 호스트에 uv / venv 셋업 없이 동일한 PyTorch + torch-mlir + HF 환경 진입
+#   - 외부 협업자와 동일 환경 보장 (NPU compiler / runtime 연구원 등)
+#
+# 기존 `Dockerfile` 영향 0 (sibling, additive).
+
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/workspace/src \
+    DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /workspace
+
+# ---- Interactive dev tools (light, ~20 MB) ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        bash-completion \
+        ca-certificates \
+        curl \
+        git \
+        jq \
+        less \
+        procps \
+        vim-tiny \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- Python deps (same as Dockerfile + ipython for REPL) ----
+RUN pip install --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.5.1 \
+ && pip install --pre torch-mlir \
+        -f https://llvm.github.io/torch-mlir/package-index/ \
+ && pip install \
+        transformers sentencepiece huggingface_hub \
+        pyyaml psutil pytest ipython
+
+COPY pyproject.toml ./
+COPY src ./src
+COPY configs ./configs
+COPY scripts ./scripts
+COPY tests ./tests
+COPY docs ./docs
+
+RUN pip install -e ".[dev,llama]"
+
+# Bash completion + colorful prompt (optional QoL).
+RUN echo 'PS1="\[\e[1;34m\][torch-mlir-zoo:dev]\[\e[0m\] \w \$ "' >> /root/.bashrc \
+ && echo 'source /etc/bash_completion 2>/dev/null || true' >> /root/.bashrc
+
+# HF_TOKEN injected at runtime (`docker run -e HF_TOKEN=$HF_TOKEN ...`).
+
+# Default = interactive bash (vs Dockerfile's default = pytest).
+CMD ["bash"]

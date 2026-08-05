@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zoo"
+version = "0.3.0"
+description = "Torch-MLIR Model Zoo (Llama-3.2-1B on-device) on the modality-agnostic harness core"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "bohyun seo" }]
+license = { text = "MIT" }
+
+dependencies = [
+    "psutil>=5.9",         # framework profiler — RSS
+    "pyyaml>=6.0",         # configs/zoo/*.yaml loader
+    "click>=8.1",          # `alpaca` CLI
+    # Upper bound is 2.6, not 2.7. Measured: on torch 2.6 run_decompositions()
+    # no longer decomposes aten.linear, so the analysis and fused profiles
+    # produce identical IR (SwiGLU: linear=3/mm=0 in both, against 0/3 vs 3/0
+    # on 2.5). The two-profile contract this SDK is built on stops holding, and
+    # no test catches it. Revisit by re-deriving the profiles against 2.6.
+    "torch>=2.4,<2.6",
+    # torch-mlir wheel ships on llvm.github.io/torch-mlir/package-index/ (pre)
+    # and isn't on PyPI — install via Dockerfile, not here.
+]
+
+[project.scripts]
+alpaca = "torch_mlir_zoo.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+llama = [
+    # <5 measured: transformers 5.x changes Qwen's numerics enough that
+    # test_qwen_from_pretrained_matches_hf goes from ~1e-4 to 4.6e-2 against HF.
+    "transformers>=4.45,<5",    # tokenizer + HF weight loading
+    "sentencepiece>=0.2",
+    "huggingface_hub>=0.25",
+]
+shark = [
+    # iree.turbine.aot export backend (sibling to torch_mlir.compile).
+    # Pre-release wheels — iree-turbine 3.10 ships only as a pre-release, so the
+    # resolver must be told to accept one or the install ends in "No solution
+    # found" with nothing installed:
+    #   uv pip install -e .[shark] --prerelease=allow \
+    #     --find-links https://iree.dev/pip-release-links.html
+    #   pip install -e .[shark] --pre \
+    #     --find-links https://iree.dev/pip-release-links.html
+    "iree-base-compiler==3.11.*",
+    "iree-base-runtime==3.11.*",
+    "iree-turbine==3.10.*",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# microkernel Jinja templates are loaded at runtime via PackageLoader
+"torch_mlir_zoo.kernels" = ["templates/*.mlir"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+# driver scripts set up sys.path before importing the package
+"scripts/run_hf_models_export.py" = ["E402"]
+"scripts/run_whisper_export.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["slow: heavy end-to-end tests (opt-in via RUN_HEAVY=1)"]

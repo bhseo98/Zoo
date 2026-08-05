@@ -1,0 +1,20 @@
+# Qwen2.5-0.5B-Instruct — Llama-family reference LLM.
+# strict: true is required: its forward slices nn.ModuleList (self.layers[:n]),
+# which the non-strict export tracer cannot rebuild (capture.Diagnosis L1).
+stages:
+  - name: load
+    stage: loader
+    config:
+      type: hf_model
+      model_id: Qwen/Qwen2.5-0.5B-Instruct
+      task: causal_lm
+      seq_len: 8
+  - name: export
+    stage: exporter
+    config:
+      type: iree_turbine
+      out_path: artifacts/zoo-hf/qwen2.5-0.5b.mlir
+      strict: true
+  - name: analyze
+    stage: analyzer
+    config: { type: ir_summary, out_path: artifacts/zoo-hf/qwen2.5-0.5b.summary.json }

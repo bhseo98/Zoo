@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv*/
+
+# Test / tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated artifacts (MLIR dumps, compiled modules, profiles)
+artifacts/
+logs/
+*.vmfb
+*.mlir
+# kernel microkernel templates are SOURCE (Jinja .mlir), not generated artifacts
+!src/torch_mlir_zoo/kernels/templates/*.mlir
+*.summary.json
+
+# OS / editor
+.DS_Store
+*.swp
