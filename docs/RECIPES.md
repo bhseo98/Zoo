@@ -6,6 +6,77 @@
 toolchain 의존성은 **전용 virtualenv**(`pip install -e .[shark]`)에 설치한다.
 시스템 Python에 설치 금지.
 
+이 저장소는 패키지 **두 개**를 담고 있다. `torch_mlir_zoo`가 export·감사·커널이고,
+`npu_harness_framework`는 그 밑에 깔린 **도메인 중립 코어**(197 LOC)다. §0이 코어,
+§1 이후가 zoo다. 코어는 MLIR도 torch도 몰라서, export와 무관한 파이프라인에도
+그대로 쓸 수 있다.
+
+---
+
+## 0. 프레임워크 코어 — stage · registry · pipeline · profiler
+
+네 개가 전부다. `BaseStage`(단일 `__call__`), `@register`/`build`(config로 구현
+선택), `Pipeline`(fold + 자동 계측), `measure`(RSS·지연·budget 경고).
+
+```python
+from npu_harness_framework import BaseStage, Pipeline, build, register, registered
+
+@register("preprocess", "scale")
+class Scale(BaseStage):
+    def __init__(self, factor: float = 2.0):
+        self.factor = factor
+
+    def __call__(self, payload):          # stage는 이 메서드 하나만 갖는다
+        return [x * self.factor for x in payload]
+
+@register("preprocess", "clip")
+class Clip(BaseStage):
+    def __init__(self, hi: float = 5.0):
+        self.hi = hi
+
+    def __call__(self, payload):
+        return [min(x, self.hi) for x in payload]
+
+# config가 구현을 고른다 — 'type'이 이름, 나머지는 생성자 kwargs로 간다
+pipe = Pipeline(
+    [("scale", build("preprocess", {"type": "scale", "factor": 3.0})),
+     ("clip",  build("preprocess", {"type": "clip", "hi": 5.0}))],
+    log_path="logs/profile.jsonl",
+    budget_mb=2048,
+)
+print(pipe.run([1.0, 2.0, 3.0]))   # [3.0, 5.0, 5.0]
+print(registered("preprocess"))    # ['scale', 'clip']
+```
+
+실행하면 stage마다 한 줄씩 나오고, 같은 내용이 JSONL로도 쌓인다:
+
+```console
+  ⏱  [scale]     0.0 ms  |  RAM    389 MB (Δ +371)  |  GPU peak      0 MB
+  ⏱  [clip]      0.0 ms  |  RAM    389 MB (Δ +0)    |  GPU peak      0 MB
+```
+```json
+{"stage": "scale", "elapsed_ms": 0.01, "ram_after_mb": 389.2, "ram_delta_mb": 370.6, "gpu_peak_mb": 0.0}
+```
+
+`budget_mb`를 넘기면 경고가 붙는다. 온디바이스 타깃은 메모리가 먼저 터지므로,
+**계측을 stage 안에 넣지 않고 파이프라인이 감싸게** 되어 있다 — stage 코드에는
+프로파일링이 한 줄도 없다.
+
+zoo가 코어를 쓰는 방식도 똑같다: `torch_mlir_zoo/stages.py`가 loader·exporter·
+analyzer를 `@register`로 올리고, `configs/zoo/*.yaml`이 `type` 한 줄로 고른다.
+**코어를 고칠 일은 없다.** 새 op·모델·백엔드는 전부 additive로 붙는다.
+
+| 하려는 것 | 방법 |
+|---|---|
+| 새 stage 종류 | `@register("<stage>", "<name>")` + `BaseStage` 상속 |
+| 구현 교체 | config의 `type` 한 줄 |
+| 등록된 것 조회 | `registered()` / `registered("<stage>")` |
+| 계측 끄기 | `Pipeline(..., profiler_enabled=False)` |
+| 단독 계측 | `with measure("name", log_path, budget_mb): ...` |
+
+잘못된 `type`이나 없는 stage는 **build 시점에** 바로 실패한다 — 파이프라인이
+반쯤 돌다 죽는 것보다 낫다.
+
 ---
 
 ## 1. 온디바이스 모델 export → torch-dialect MLIR

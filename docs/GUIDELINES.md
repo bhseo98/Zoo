@@ -21,8 +21,22 @@ Zoo에 모델·op·export 백엔드를 추가하거나 수정할 때 지키는 �
 - **새 모델**: `models/`에 forward-only 모델 + `@register("model", ...)` loader.
 - **새 export 백엔드**: `exporters/`에 `(module, args) -> str` 함수 +
   `@register("exporter", "<name>")` stage + sibling YAML. 기존 백엔드는 additive로 유지.
-- **프레임워크 코어**(`interfaces` / `registry` / `pipeline` / `profiler`)는 절대
-  fork 금지 — plugin으로만 확장(코어 diff 0 불변식).
+- **완전히 다른 파이프라인**: 코어(`npu_harness_framework`)만 쓰면 된다. MLIR도
+  torch도 모르므로 export와 무관한 stage에도 그대로 붙는다 —
+  [RECIPES §0](RECIPES.md#0-프레임워크-코어--stage--registry--pipeline--profiler).
+
+### 코어는 건드리지 않는다
+
+`interfaces` / `registry` / `pipeline` / `profiler` 네 파일은 **fork 금지**다.
+zoo 전체가 코어에 diff 0인 additive plugin이고, 이게 유지되는 한:
+
+- 새 op·모델·백엔드가 서로를 깨뜨리지 않는다
+- 코어 197 LOC를 통째로 읽고 이해할 수 있다
+- 다른 도메인이 코어만 가져다 쓸 수 있다
+
+코어를 고쳐야 할 것 같으면 **대개 stage에 속할 로직이 코어로 새어 나온 것**이다.
+확장점은 `@register`이지 코어 수정이 아니다. `BaseStage`가 `__call__` 하나뿐인
+것도 같은 이유다 — batch·streaming·async를 넣자는 요구는 stage 안에서 해결한다.
 
 ## 프로파일과 백엔드
 

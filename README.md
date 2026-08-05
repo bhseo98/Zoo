@@ -191,7 +191,7 @@ op별 최소 probe를 export하고 CPU vmfb까지 컴파일해야 등재된다.
 
 | 패키지 / 경로 | 내용 |
 |---|---|
-| `npu_harness_framework` | 도메인 중립 코어 — `interfaces`(BaseStage) · `registry` · `pipeline` · `profiler` (~130 LOC) |
+| `npu_harness_framework` | 도메인 중립 코어 197 LOC — `interfaces`(BaseStage) · `registry` · `pipeline` · `profiler`. MLIR도 torch도 모르므로 export와 무관한 파이프라인에도 쓴다 → [사용법](docs/RECIPES.md#0-프레임워크-코어--stage--registry--pipeline--profiler) |
 | `torch_mlir_zoo.alpaca` | SDK 파사드 — `export_for_npu(model, args)` 한 줄 진입점 (+ `alpaca` CLI) |
 | `torch_mlir_zoo.capture` | **L1 계층** — 실패를 층(L0 load / L1 capture / L2 lowering)으로 진단, 알려진 rewrite 자동 적용, export 시점 컨텍스트 마커 제거 |
 | `torch_mlir_zoo.ops` | 단위 op 4종 — `ScaledDotProductAttention` · `RMSNorm` · `SwiGLU` · `TopK` (순수 표준-aten `nn.Module`) |

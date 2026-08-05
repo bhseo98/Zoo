@@ -8,6 +8,16 @@ PyTorch 모델 하나를 torch-dialect MLIR로 내리고, 그 IR이 온디바이
 - 명령 모음: [RECIPES.md](RECIPES.md)
 - 기여 규칙: [GUIDELINES.md](GUIDELINES.md)
 
+### 설치되는 패키지는 두 개다
+
+| 패키지 | 내용 | 시작점 |
+|---|---|---|
+| `torch_mlir_zoo` | export · capture 진단 · op 감사 · INT8 커널. 이 문서가 다루는 것 | 아래 §2 |
+| `npu_harness_framework` | 도메인 중립 코어 197 LOC — `BaseStage` · registry · pipeline · profiler. MLIR도 torch도 모른다 | [RECIPES §0](RECIPES.md#0-프레임워크-코어--stage--registry--pipeline--profiler) |
+
+zoo가 코어 위에 얹힌 plugin이라, 코어만 따로 쓸 수도 있다 — export와 무관한
+파이프라인에도 stage·registry·budget 계측이 그대로 붙는다.
+
 ---
 
 ## 1. 설치
