@@ -107,10 +107,10 @@ alpaca audit fused.mlir --profile fused
 `analysis`에서 정상인 `mm`이 `fused`에서는 **분해가 새어나왔다는 신호**다. 그래서
 allowlist가 프로파일별로 다르다.
 
-> ⚠ **지금 `fused` allowlist는 미완성이다.** HF 체크포인트 12개 전부 `dropout`으로,
-> 7개는 추가로 `layer_norm`으로 걸린다(whisper는 `conv1d`도). 서버측 op 유출이
-> 아니라 등재가 안 된 것 — `analysis`에서는 `run_decompositions`가 없애버려 감사에
-> 나타나지 않던 op들이다. `--profile fused` 감사가 빨간불이면 먼저 이걸 의심할 것.
+> `--profile fused` 감사가 낯선 op으로 빨간불이면, **서버측 유출보다 미인증을 먼저
+> 의심할 것.** `dropout`·`layer_norm`·`conv1d`가 정확히 그랬다 — `analysis`에서는
+> `run_decompositions`가 지워버려 감사에 아예 안 나타나던 op들이라, 게이트는
+> 프로파일별로 갈렸는데 probe는 안 갈려 있었다. 지금은 인증돼 12/12다.
 > 상세는 [ARCHITECTURE.md §3.5](ARCHITECTURE.md#35-온디바이스-lowering--두-개의-게이트).
 
 > `profile="fused"`와 `quantize="int8"`은 **함께 쓸 수 없다.** 양자화하면
